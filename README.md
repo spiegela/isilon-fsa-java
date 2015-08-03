@@ -21,6 +21,8 @@ Currently implemented methods:
 * getAccessControlList
 * setAccessControlList
 
+For examples, check out the [client unit tests](https://github.com/spiegela/isilon-fsa-java/blob/master/src/test/java/com/emc/isilon/ran/ClientTest.java).
+
 TODO:
 -----
 * Extract client configuration
