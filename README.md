@@ -12,8 +12,8 @@ must be imported into the Java and/or IDE keystores for the examples to
 execute.  Host name verification has been disabled in this example.
 
 For the purposes of demonstration, the client configuration has been done
-via constants in the Client class.  For production usage, this could be
-extracted via beans, configuration classes or properties.
+via constants in the Client class.  For production usage, this should be
+extracted into the constructor.
 
 Currently implemented methods:
 
