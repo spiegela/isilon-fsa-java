@@ -17,6 +17,9 @@ extracted via beans, configuration classes or properties.
 
 Currently implemented methods:
 
+* createDirectory
+* deleteDirectory
+* deleteFile
 * getDirectoryListing
 * getAccessControlList
 * setAccessControlList

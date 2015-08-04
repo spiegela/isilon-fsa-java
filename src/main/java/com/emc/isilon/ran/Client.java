@@ -19,13 +19,10 @@ public class Client {
 	private final String BASE = "https://172.16.57.101:8080/namespace/ifs/rest_user";
 	private final String USER = "rest_user";
 	private final String PASS = "Password123!";
-	private UriBuilder uriBuilder;
 	private javax.ws.rs.client.Client jerseyClient;
 
 	public Client() {
 		
-		uriBuilder = UriBuilder.fromPath(BASE).path("{location}");
-
 		HttpAuthenticationFeature authFeature = HttpAuthenticationFeature
 				.basicBuilder().nonPreemptive().credentials(USER, PASS).build();
 
@@ -42,40 +39,54 @@ public class Client {
 				.build();
 	}
 
-	public DirectoryListing getDirectoryListing(String dir) {
-		URI uri = uriBuilder.build(dir);
+	public DirectoryListing getDirectoryListing(String relativePath) throws ClientException {
+		URI uri = createUriBuilder(relativePath).build();
 		Response response = jerseyClient.target(uri).request()
 				.accept("application/json").get();
+		handleResponse(response);
 		return response.readEntity(DirectoryListing.class);
 	}
-	
-	public EntryAccessControl getAccessControlList(String entry) {
-		URI uri = uriBuilder.queryParam("acl", true).build(entry);
+
+	public EntryAccessControl getAccessControlList(String relativePath) throws ClientException {
+		URI uri = createUriBuilder(relativePath).queryParam("acl", true).build();
 		Response response = jerseyClient.target(uri).request().accept("applciation/json").get();
+		handleResponse(response);
 		return response.readEntity(EntryAccessControl.class);
 	}
 	
-	public void setAccessControlList(EntryAccessControl acl, String entry) {
-		URI uri = uriBuilder.queryParam("acl", true)
-							.queryParam("access", true)
-							.build(entry);
-		jerseyClient.target(uri).request().put(Entity.json(acl));
-	}
-	
-	public void deleteDirectory(String dir) {
-		deleteDirectory(dir, false);
+	public void setAccessControlList(EntryAccessControl acl, String relativePath)
+			throws ClientException {
+		URI uri = createUriBuilder(relativePath).queryParam("acl", true)
+				.queryParam("access", true).build();
+		Response response = jerseyClient.target(uri).request()
+				.put(Entity.json(acl));
+		handleResponse(response);
 	}
 
-	public void deleteDirectory(String dir, Boolean recursive) {
-		URI uri = uriBuilder.queryParam("recursive", recursive).build(dir);
-		jerseyClient.target(uri).request().delete();
+	public void deleteDirectory(String relativePath) throws ClientException {
+		deleteDirectory(relativePath, false);
 	}
 
-	public void createDirectory(String dir) {
-		URI uri = uriBuilder.build(dir);
-		jerseyClient.target(uri).request()
+	public void deleteDirectory(String relativePath, Boolean recursive)
+			throws ClientException {
+		URI uri = createUriBuilder(relativePath).queryParam("recursive",
+				recursive).build();
+		Response response = jerseyClient.target(uri).request().delete();
+		handleResponse(response);
+	}
+
+	public void createDirectory(String relativePath) throws ClientException {
+		URI uri = createUriBuilder(relativePath).build();
+		Response response = jerseyClient.target(uri).request()
 			.header("x-isi-ifs-target-type", "container")
 			.put(Entity.json(""));
+		handleResponse(response);
+	}
+
+	public void deleteFile(String relativePath) throws ClientException {
+		URI uri = createUriBuilder(relativePath).build();
+		Response response = jerseyClient.target(uri).request().delete();
+		handleResponse(response);
 	}
 
 	private HostnameVerifier getHostnameVerifier() {
@@ -86,5 +97,18 @@ public class Client {
 			}
 		};
 	}
-
+	
+	private UriBuilder createUriBuilder(String relativePath) {
+		UriBuilder uriBuilder = UriBuilder.fromPath(BASE);
+		for (String segment : relativePath.split("/")) {
+			uriBuilder.segment(segment);
+		}
+		return uriBuilder;
+	}
+	
+	private void handleResponse(Response response) throws ClientException {
+		if (response.getStatus() > 399) {
+			throw new ClientException(response.getStatusInfo().toString());
+		}
+	}
 }
