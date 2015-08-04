@@ -61,6 +61,22 @@ public class Client {
 							.build(entry);
 		jerseyClient.target(uri).request().put(Entity.json(acl));
 	}
+	
+	public void deleteDirectory(String dir) {
+		deleteDirectory(dir, false);
+	}
+
+	public void deleteDirectory(String dir, Boolean recursive) {
+		URI uri = uriBuilder.queryParam("recursive", recursive).build(dir);
+		jerseyClient.target(uri).request().delete();
+	}
+
+	public void createDirectory(String dir) {
+		URI uri = uriBuilder.build(dir);
+		jerseyClient.target(uri).request()
+			.header("x-isi-ifs-target-type", "container")
+			.put(Entity.json(""));
+	}
 
 	private HostnameVerifier getHostnameVerifier() {
 		return new HostnameVerifier() {
