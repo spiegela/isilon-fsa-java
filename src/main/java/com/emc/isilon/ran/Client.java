@@ -1,11 +1,14 @@
 package com.emc.isilon.ran;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -87,6 +90,29 @@ public class Client {
 		URI uri = createUriBuilder(relativePath).build();
 		Response response = jerseyClient.target(uri).request().delete();
 		handleResponse(response);
+	}
+
+	public void createFile(String relativePath, String localFilePath,
+			MediaType mediaType) throws ClientException {
+		createFile(relativePath, localFilePath, mediaType, false);
+	}
+
+	public void createFile(String relativePath, String localFilePath,
+			MediaType mediaType, Boolean overwrite) throws ClientException {
+		URI uri = createUriBuilder(relativePath).build();
+		File file = new File(localFilePath);
+		Response response = jerseyClient.target(uri)
+				.queryParam("overwrite", overwrite).request()
+				.header("x-isi-ifs-target-type", "object")
+				.put(Entity.entity(file, mediaType));
+		handleResponse(response);
+	}
+
+	public InputStream readFile(String relativePath, MediaType mediaType) throws ClientException {
+		URI uri = createUriBuilder(relativePath).build();
+		Response response = jerseyClient.target(uri).request(new MediaType[] {mediaType}).get();
+		handleResponse(response);
+		return response.readEntity(InputStream.class);
 	}
 
 	private HostnameVerifier getHostnameVerifier() {

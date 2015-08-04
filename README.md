@@ -19,7 +19,9 @@ Currently implemented methods:
 
 * createDirectory
 * deleteDirectory
+* createFile
 * deleteFile
+* readFile
 * getDirectoryListing
 * getAccessControlList
 * setAccessControlList
@@ -27,4 +29,12 @@ Currently implemented methods:
 TODO:
 -----
 * Extract client configuration
-* Expand example set to more operations
+* Expand example set to more file/directory operations:
+  - copy
+  - move
+  - clone
+  - attributes
+* Add additional examples
+  - access points
+  - query operations
+  - smartlock
