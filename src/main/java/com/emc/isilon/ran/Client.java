@@ -18,31 +18,30 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 
 public class Client {
 
-	// TODO:  Extract configuration
+	// TODO: Extract configuration
 	private final String BASE = "https://172.16.57.101:8080/namespace/ifs/rest_user";
 	private final String USER = "rest_user";
 	private final String PASS = "Password123!";
 	private javax.ws.rs.client.Client jerseyClient;
 
 	public Client() {
-		
+
 		HttpAuthenticationFeature authFeature = HttpAuthenticationFeature
 				.basicBuilder().nonPreemptive().credentials(USER, PASS).build();
 
 		/**
-		 * Disable host name verification.  Should be able to configure the Isilon
-		 * certificate with the correct host name.
+		 * Disable host name verification. Should be able to configure the
+		 * Isilon certificate with the correct host name.
 		 **/
 		HostnameVerifier hostnameVerifier = getHostnameVerifier();
 		HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
 		jerseyClient = JerseyClientBuilder.newBuilder()
-				.register(JacksonFeature.class)
-				.register(authFeature)
-				.hostnameVerifier(hostnameVerifier)
-				.build();
+				.register(JacksonFeature.class).register(authFeature)
+				.hostnameVerifier(hostnameVerifier).build();
 	}
 
-	public DirectoryListing getDirectoryListing(String relativePath) throws ClientException {
+	public DirectoryListing getDirectoryListing(String relativePath)
+			throws ClientException {
 		URI uri = createUriBuilder(relativePath).build();
 		Response response = jerseyClient.target(uri).request()
 				.accept("application/json").get();
@@ -50,13 +49,16 @@ public class Client {
 		return response.readEntity(DirectoryListing.class);
 	}
 
-	public EntryAccessControl getAccessControlList(String relativePath) throws ClientException {
-		URI uri = createUriBuilder(relativePath).queryParam("acl", true).build();
-		Response response = jerseyClient.target(uri).request().accept("applciation/json").get();
+	public EntryAccessControl getAccessControlList(String relativePath)
+			throws ClientException {
+		URI uri = createUriBuilder(relativePath).queryParam("acl", true)
+				.build();
+		Response response = jerseyClient.target(uri).request()
+				.accept("applciation/json").get();
 		handleResponse(response);
 		return response.readEntity(EntryAccessControl.class);
 	}
-	
+
 	public void setAccessControlList(EntryAccessControl acl, String relativePath)
 			throws ClientException {
 		URI uri = createUriBuilder(relativePath).queryParam("acl", true)
@@ -81,8 +83,8 @@ public class Client {
 	public void createDirectory(String relativePath) throws ClientException {
 		URI uri = createUriBuilder(relativePath).build();
 		Response response = jerseyClient.target(uri).request()
-			.header("x-isi-ifs-target-type", "container")
-			.put(Entity.json(""));
+				.header("x-isi-ifs-target-type", "container")
+				.put(Entity.json(""));
 		handleResponse(response);
 	}
 
@@ -108,9 +110,11 @@ public class Client {
 		handleResponse(response);
 	}
 
-	public InputStream readFile(String relativePath, MediaType mediaType) throws ClientException {
+	public InputStream readFile(String relativePath, MediaType mediaType)
+			throws ClientException {
 		URI uri = createUriBuilder(relativePath).build();
-		Response response = jerseyClient.target(uri).request(new MediaType[] {mediaType}).get();
+		Response response = jerseyClient.target(uri)
+				.request(new MediaType[] { mediaType }).get();
 		handleResponse(response);
 		return response.readEntity(InputStream.class);
 	}
@@ -123,7 +127,7 @@ public class Client {
 			}
 		};
 	}
-	
+
 	private UriBuilder createUriBuilder(String relativePath) {
 		UriBuilder uriBuilder = UriBuilder.fromPath(BASE);
 		for (String segment : relativePath.split("/")) {
@@ -131,7 +135,7 @@ public class Client {
 		}
 		return uriBuilder;
 	}
-	
+
 	private void handleResponse(Response response) throws ClientException {
 		if (response.getStatus() > 399) {
 			throw new ClientException(response.getStatusInfo().toString());
