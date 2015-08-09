@@ -138,7 +138,8 @@ public class Client {
 
 	private void handleResponse(Response response) throws ClientException {
 		if (response.getStatus() > 399) {
-			throw new ClientException(response.getStatusInfo().toString());
+			throw new ClientException(response.getStatusInfo().toString()
+					+ ": " + response.readEntity(ErrorList.class));
 		}
 	}
 }
